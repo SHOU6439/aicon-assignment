@@ -189,15 +189,27 @@ func scanItem(scanner interface {
 	}
 
 	if purchaseDate != "" {
-		if parsedDate, err := time.Parse("2006-01-02", purchaseDate); err == nil {
-			item.PurchaseDate = parsedDate.Format("2006-01-02")
-		} else {
-			item.PurchaseDate = purchaseDate
-		}
+		item.PurchaseDate = normalizeDateString(purchaseDate)
 	}
 
 	item.CreatedAt = createdAt
 	item.UpdatedAt = updatedAt
 
 	return &item, nil
+}
+
+func normalizeDateString(value string) string {
+	layouts := []string{
+		"2006-01-02",
+		"2006-01-02 15:04:05",
+		time.RFC3339,
+	}
+
+	for _, layout := range layouts {
+		if parsed, err := time.Parse(layout, value); err == nil {
+			return parsed.Format("2006-01-02")
+		}
+	}
+
+	return value
 }
